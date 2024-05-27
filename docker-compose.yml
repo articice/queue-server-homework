@@ -1,0 +1,32 @@
+version: "3"
+services:
+  app:
+    build: ./
+    restart: always
+    ports:
+      - "3000:3000"
+    hostname: queue_test
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  rabbit:
+    image: "rabbitmq:3.8-management"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+      - "25676:25676"
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: secret
+      RABBITMQ_ERLANG_COOKIE: "secret cookie here"
+      RABBITMQ_USE_LONGNAME: "false"
+      RABBITMQ_LOG_BASE: /var/log/rabbitmq
+      RABBITMQ_LOGS: /var/log/rabbitmq/rabbitmq.log
+      RABBITMQ_SASL_LOGS: /var/log/rabbitmq/rabbitmq_sasl.log
+    healthcheck:
+      test: "rabbitmq-diagnostics -q status"
+      interval: 10s
+      timeout: 10s
+      retries: 5
